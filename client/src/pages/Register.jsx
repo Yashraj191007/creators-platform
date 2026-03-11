@@ -1,21 +1,17 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-
-
-const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+const Register = () => {
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
-    const location = useLocation();
     const { login } = useAuth();
 
-    // Input handler
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -23,9 +19,9 @@ const Login = () => {
         if (apiError) setApiError('');
     };
 
-    // Validation
     const validateForm = () => {
         const newErrors = {};
+        if (!formData.name.trim()) newErrors.name = 'Name is required';
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -33,12 +29,18 @@ const Login = () => {
         }
         if (!formData.password) {
             newErrors.password = 'Password is required';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters';
+        }
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = 'Please confirm your password';
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    // Submit handler
     const handleSubmit = async (e) => {
         e.preventDefault();
         setApiError('');
@@ -46,10 +48,11 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    name: formData.name.trim(),
                     email: formData.email.trim().toLowerCase(),
                     password: formData.password,
                 }),
@@ -59,12 +62,9 @@ const Login = () => {
 
             if (response.ok) {
                 login(data.user, data.token);
-                setFormData({ email: '', password: '' });
-                // Redirect to the page the user was trying to access, or /dashboard
-                const from = location.state?.from?.pathname || '/dashboard';
-                navigate(from, { replace: true });
+                navigate('/dashboard');
             } else {
-                setApiError(data.message || 'Login failed. Please try again.');
+                setApiError(data.message || 'Registration failed. Please try again.');
             }
         } catch {
             setApiError('Unable to connect to server. Please check your connection.');
@@ -79,22 +79,35 @@ const Login = () => {
             <div style={styles.blob2} />
 
             <div style={styles.card}>
-                {/* Header */}
                 <div style={styles.header}>
                     <div style={styles.logoCircle}>✦</div>
-                    <h1 style={styles.title}>Welcome Back</h1>
-                    <p style={styles.subtitle}>Sign in to your Creators Platform account</p>
+                    <h1 style={styles.title}>Create Account</h1>
+                    <p style={styles.subtitle}>Join Creators Platform today</p>
                 </div>
 
-                {/* API Error */}
                 {apiError && (
                     <div style={styles.errorBanner}>
                         <span>⚠️</span> {apiError}
                     </div>
                 )}
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} style={styles.form} noValidate>
+                    {/* Name */}
+                    <div style={styles.field}>
+                        <label htmlFor="name" style={styles.label}>Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Your full name"
+                            style={errors.name ? { ...styles.input, ...styles.inputError } : styles.input}
+                            disabled={isLoading}
+                            autoComplete="name"
+                        />
+                        {errors.name && <span style={styles.errorText}>{errors.name}</span>}
+                    </div>
 
                     {/* Email */}
                     <div style={styles.field}>
@@ -123,12 +136,12 @@ const Login = () => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                placeholder="Enter your password"
+                                placeholder="At least 6 characters"
                                 style={errors.password
                                     ? { ...styles.input, ...styles.inputWithBtn, ...styles.inputError }
                                     : { ...styles.input, ...styles.inputWithBtn }}
                                 disabled={isLoading}
-                                autoComplete="current-password"
+                                autoComplete="new-password"
                             />
                             <button
                                 type="button"
@@ -143,40 +156,51 @@ const Login = () => {
                         {errors.password && <span style={styles.errorText}>{errors.password}</span>}
                     </div>
 
-                    {/* Submit */}
+                    {/* Confirm Password */}
+                    <div style={styles.field}>
+                        <label htmlFor="confirmPassword" style={styles.label}>Confirm Password</label>
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Repeat your password"
+                            style={errors.confirmPassword ? { ...styles.input, ...styles.inputError } : styles.input}
+                            disabled={isLoading}
+                            autoComplete="new-password"
+                        />
+                        {errors.confirmPassword && <span style={styles.errorText}>{errors.confirmPassword}</span>}
+                    </div>
+
                     <button
                         type="submit"
                         style={isLoading ? { ...styles.btn, ...styles.btnDisabled } : styles.btn}
                         disabled={isLoading}
                     >
                         {isLoading
-                            ? <span style={styles.btnContent}><span style={styles.spinner} /> Signing in...</span>
-                            : 'Sign In ✦'
+                            ? <span style={styles.btnContent}><span style={styles.spinner} /> Creating account...</span>
+                            : 'Create Account ✦'
                         }
                     </button>
                 </form>
 
-                {/* Footer */}
                 <p style={styles.footerText}>
-                    Don&apos;t have an account?{' '}
-                    <Link to="/register" style={styles.footerLink}>Sign up here</Link>
+                    Already have an account?{' '}
+                    <Link to="/login" style={styles.footerLink}>Sign in</Link>
                 </p>
             </div>
         </div>
     );
 };
 
-// ---------- Styles ----------
 const styles = {
     page: {
         minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
         padding: '2rem 1rem',
         background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-        position: 'relative',
-        overflow: 'hidden',
+        position: 'relative', overflow: 'hidden',
     },
     blob1: {
         position: 'absolute', top: '-10rem', right: '-10rem',
@@ -192,13 +216,11 @@ const styles = {
     },
     card: {
         position: 'relative', zIndex: 1,
-        width: '100%', maxWidth: '420px',
+        width: '100%', maxWidth: '440px',
         padding: '2.5rem',
         background: 'rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '20px',
-        border: '1px solid rgba(255,255,255,0.12)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)',
         boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
     },
     header: { textAlign: 'center', marginBottom: '2rem' },
@@ -217,12 +239,11 @@ const styles = {
     errorBanner: {
         display: 'flex', alignItems: 'center', gap: '0.5rem',
         padding: '0.875rem 1rem',
-        background: 'rgba(239,68,68,0.15)',
-        border: '1px solid rgba(239,68,68,0.35)',
+        background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
         borderRadius: '10px', color: '#fca5a5',
         fontSize: '0.9rem', marginBottom: '1.25rem',
     },
-    form: { display: 'flex', flexDirection: 'column', gap: '1.25rem' },
+    form: { display: 'flex', flexDirection: 'column', gap: '1.1rem' },
     field: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
     label: {
         fontSize: '0.82rem', fontWeight: '600', color: 'rgba(255,255,255,0.7)',
@@ -273,4 +294,4 @@ const styles = {
     footerLink: { color: '#818cf8', fontWeight: '600', textDecoration: 'none' },
 };
 
-export default Login;
+export default Register;

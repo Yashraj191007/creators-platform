@@ -1,60 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-// ---------- JWT expiry helper ----------
-const isTokenExpired = (token) => {
-    if (!token) return true;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.exp < Date.now() / 1000;
-    } catch {
-        return true;
-    }
-};
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const token = localStorage.getItem('token');
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
 
-        // Redirect if not logged in or token expired
-        if (!token || !userData || isTokenExpired(token)) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/login');
-            return;
-        }
+    if (!user) return null;
 
-        try {
-            setUser(JSON.parse(userData));
-        } catch {
-            navigate('/login');
-        }
-    }, [navigate]);
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-    };
-
-    if (!user) {
-        return (
-            <div style={styles.loadingPage}>
-                <div style={styles.loadingSpinner} />
-                <p style={styles.loadingText}>Loading your dashboard...</p>
-            </div>
-        );
-    }
 
     // Decode JWT to show raw payload (for educational demo)
-    const token = localStorage.getItem('token');
     let jwtPayload = null;
     try {
-        jwtPayload = JSON.parse(atob(token.split('.')[1]));
+        jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
     } catch {
         jwtPayload = null;
     }
@@ -77,7 +34,7 @@ const Dashboard = () => {
                     </div>
                     <div style={styles.topBarRight}>
                         <span style={styles.userPill}>👤 {user.name}</span>
-                        <button onClick={handleLogout} style={styles.logoutBtn}>
+                        <button onClick={logout} style={styles.logoutBtn}>
                             Logout
                         </button>
                     </div>
