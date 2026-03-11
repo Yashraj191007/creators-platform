@@ -51,6 +51,25 @@ const Dashboard = () => {
     const handlePrev = () => { if (pagination?.hasPrevPage) setCurrentPage((p) => p - 1); };
     const handleNext = () => { if (pagination?.hasNextPage) setCurrentPage((p) => p + 1); };
 
+    const handleDelete = async (postId) => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this post? This action cannot be undone.'
+        );
+        if (!confirmed) return;
+
+        try {
+            const response = await api.delete(`/api/posts/${postId}`);
+            if (response.data.success) {
+                // Optimistic UI update
+                setPosts(posts.filter(post => post._id !== postId));
+                setPagination(prev => prev ? { ...prev, totalPosts: prev.totalPosts - 1 } : null);
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert(error.response?.data?.message || 'Failed to delete post');
+        }
+    };
+
     return (
         <div style={styles.page}>
             <div style={styles.blob1} />
@@ -187,6 +206,17 @@ const Dashboard = () => {
                                                 })}
                                             </span>
                                             <span style={styles.postBadge}>Published</span>
+                                        </div>
+                                        <div style={styles.postActions}>
+                                            <Link to={`/edit/${post._id}`} style={styles.editBtn}>
+                                                Edit
+                                            </Link>
+                                            <button 
+                                                onClick={() => handleDelete(post._id)}
+                                                style={styles.deleteBtn}
+                                            >
+                                                Delete
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -395,6 +425,22 @@ const styles = {
         background: 'rgba(16,185,129,0.15)',
         border: '1px solid rgba(16,185,129,0.3)',
         borderRadius: '999px', color: '#6ee7b7',
+    },
+    postActions: {
+        display: 'flex', gap: '0.75rem', marginTop: '1rem',
+        paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)',
+    },
+    editBtn: {
+        flex: 1, textAlign: 'center', padding: '0.5rem',
+        background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+        borderRadius: '8px', color: '#a5b4fc', fontSize: '0.8rem', fontWeight: '600',
+        textDecoration: 'none', cursor: 'pointer', transition: 'background 0.2s',
+    },
+    deleteBtn: {
+        flex: 1, padding: '0.5rem',
+        background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
+        borderRadius: '8px', color: '#fca5a5', fontSize: '0.8rem', fontWeight: '600',
+        cursor: 'pointer', transition: 'background 0.2s',
     },
     // Pagination
     paginationBar: {
