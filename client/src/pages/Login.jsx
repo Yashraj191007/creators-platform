@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 
 
@@ -38,7 +39,7 @@ const Login = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Submit handler
+    // Submit handler – uses centralized api utility (axios)
     const handleSubmit = async (e) => {
         e.preventDefault();
         setApiError('');
@@ -46,32 +47,32 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: formData.email.trim().toLowerCase(),
-                    password: formData.password,
-                }),
+            // api utility automatically sets Content-Type: application/json
+            const response = await api.post('/api/auth/login', {
+                email: formData.email.trim().toLowerCase(),
+                password: formData.password,
             });
 
-            const data = await response.json();
+            // axios puts the response body in response.data
+            const data = response.data;
 
-            if (response.ok) {
-                login(data.user, data.token);
-                setFormData({ email: '', password: '' });
-                // Redirect to the page the user was trying to access, or /dashboard
-                const from = location.state?.from?.pathname || '/dashboard';
-                navigate(from, { replace: true });
+            login(data.user, data.token);
+            setFormData({ email: '', password: '' });
+            // Redirect to the page the user was trying to access, or /dashboard
+            const from = location.state?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+        } catch (error) {
+            // axios throws on non-2xx; error.response contains the server's response
+            if (error.response) {
+                setApiError(error.response.data?.message || 'Login failed. Please try again.');
             } else {
-                setApiError(data.message || 'Login failed. Please try again.');
+                setApiError('Unable to connect to server. Please check your connection.');
             }
-        } catch {
-            setApiError('Unable to connect to server. Please check your connection.');
         } finally {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div style={styles.page}>
