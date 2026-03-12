@@ -3,7 +3,7 @@ import Post from '../models/Post.js';
 // @desc    Create a new post
 // @route   POST /api/posts
 // @access  Protected
-export const createPost = async (req, res) => {
+export const createPost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
 
@@ -30,14 +30,14 @@ export const createPost = async (req, res) => {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ success: false, message: messages.join(', ') });
     }
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    next(error);
   }
 };
 
 // @desc    Get paginated posts for the logged-in user
 // @route   GET /api/posts?page=1&limit=6
 // @access  Protected
-export const getPosts = async (req, res) => {
+export const getPosts = async (req, res, next) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(20, parseInt(req.query.limit) || 6);
@@ -70,14 +70,14 @@ export const getPosts = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    next(error);
   }
 };
 
 // @desc    Get a single post by ID (ownership required)
 // @route   GET /api/posts/:id
 // @access  Protected
-export const getPostById = async (req, res) => {
+export const getPostById = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id).populate('author', 'name email');
 
@@ -92,14 +92,14 @@ export const getPostById = async (req, res) => {
 
     res.status(200).json({ success: true, data: post });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    next(error);
   }
 };
 
 // @desc    Update a post (ownership required)
 // @route   PUT /api/posts/:id
 // @access  Protected
-export const updatePost = async (req, res) => {
+export const updatePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
 
@@ -128,14 +128,14 @@ export const updatePost = async (req, res) => {
       const messages = Object.values(error.errors).map((e) => e.message);
       return res.status(400).json({ success: false, message: messages.join(', ') });
     }
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    next(error);
   }
 };
 
 // @desc    Delete a post (ownership required)
 // @route   DELETE /api/posts/:id
 // @access  Protected
-export const deletePost = async (req, res) => {
+export const deletePost = async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
 
@@ -152,6 +152,6 @@ export const deletePost = async (req, res) => {
 
     res.status(200).json({ success: true, message: 'Post deleted successfully', data: { id: req.params.id } });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    next(error);
   }
 };

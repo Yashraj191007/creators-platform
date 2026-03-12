@@ -9,10 +9,14 @@ import Dashboard from './pages/Dashboard';
 import CreatePost from './pages/CreatePost';
 import EditPost from './pages/EditPost';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ToastContainer position="bottom-right" />
         <Routes>
           {/* Public pages — accessible without login */}
           <Route path="/" element={<Home />} />

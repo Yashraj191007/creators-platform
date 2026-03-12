@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { toast } from 'react-toastify';
 
 const CreatePost = () => {
     const [formData, setFormData] = useState({ title: '', content: '' });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-    const [apiError, setApiError] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-        if (apiError) setApiError('');
     };
 
     const validate = () => {
@@ -34,9 +33,10 @@ const CreatePost = () => {
                 title: formData.title.trim(),
                 content: formData.content.trim(),
             });
+            toast.success('Post created successfully!');
             navigate('/dashboard');
         } catch (error) {
-            setApiError(error.response?.data?.message || 'Failed to create post. Please try again.');
+            toast.error(error.response?.data?.message || 'Failed to create post. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -70,12 +70,6 @@ const CreatePost = () => {
                             <p style={styles.subtitle}>Share your ideas with the community</p>
                         </div>
                     </div>
-
-                    {apiError && (
-                        <div style={styles.errorBanner}>
-                            <span>⚠️</span> {apiError}
-                        </div>
-                    )}
 
                     <form onSubmit={handleSubmit} style={styles.form} noValidate>
                         {/* Title */}

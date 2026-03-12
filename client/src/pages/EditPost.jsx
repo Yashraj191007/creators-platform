@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import { toast } from 'react-toastify';
 
 const EditPost = () => {
     const { id } = useParams();
@@ -10,7 +11,6 @@ const EditPost = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState({});
-    const [apiError, setApiError] = useState('');
     const [notFound, setNotFound] = useState(false);
 
     const fetchPost = useCallback(async () => {
@@ -22,7 +22,7 @@ const EditPost = () => {
             if (err.response?.status === 403 || err.response?.status === 404) {
                 setNotFound(true);
             } else {
-                setApiError(err.response?.data?.message || 'Failed to load post.');
+                toast.error(err.response?.data?.message || 'Failed to load post.');
             }
         } finally {
             setIsLoading(false);
@@ -35,7 +35,6 @@ const EditPost = () => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-        if (apiError) setApiError('');
     };
 
     const validate = () => {
@@ -56,9 +55,10 @@ const EditPost = () => {
                 title: formData.title.trim(),
                 content: formData.content.trim(),
             });
+            toast.success('Post updated successfully!');
             navigate('/dashboard');
         } catch (err) {
-            setApiError(err.response?.data?.message || 'Failed to update post. Please try again.');
+            toast.error(err.response?.data?.message || 'Failed to update post. Please try again.');
             setIsSaving(false);
         }
     };
@@ -107,12 +107,6 @@ const EditPost = () => {
                             <p style={styles.subtitle}>Update your post's title and content</p>
                         </div>
                     </div>
-
-                    {apiError && (
-                        <div style={styles.errorBanner}>
-                            <span>⚠️</span> {apiError}
-                        </div>
-                    )}
 
                     <form onSubmit={handleSubmit} style={styles.form} noValidate>
                         {/* Title */}

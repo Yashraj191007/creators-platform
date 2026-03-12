@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { toast } from 'react-toastify';
 
 const LIMIT = 6;
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
-    const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
     // Posts state
@@ -17,7 +17,7 @@ const Dashboard = () => {
     const [postsError, setPostsError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    if (!user) return null;
+
 
     // Decode JWT payload for display
     let jwtPayload = null;
@@ -63,12 +63,15 @@ const Dashboard = () => {
                 // Optimistic UI update
                 setPosts(posts.filter(post => post._id !== postId));
                 setPagination(prev => prev ? { ...prev, totalPosts: prev.totalPosts - 1 } : null);
+                toast.success('Post deleted successfully');
             }
         } catch (error) {
             console.error('Delete error:', error);
-            alert(error.response?.data?.message || 'Failed to delete post');
+            toast.error(error.response?.data?.message || 'Failed to delete post');
         }
     };
+
+    if (!user) return null;
 
     return (
         <div style={styles.page}>

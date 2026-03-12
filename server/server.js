@@ -37,6 +37,10 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
+// Global Error Handler MUST be defined LAST
+import errorHandler from './middlewares/errorMiddleware.js';
+app.use(errorHandler);
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
