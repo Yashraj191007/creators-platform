@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
+import errorHandler from './middlewares/errorMiddleware.js';
 
 // Load environment variables
 dotenv.config();
@@ -38,7 +39,6 @@ app.use((req, res) => {
 });
 
 // Global Error Handler MUST be defined LAST
-import errorHandler from './middlewares/errorMiddleware.js';
 app.use(errorHandler);
 
 // Start server
