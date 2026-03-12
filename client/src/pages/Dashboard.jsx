@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -5,11 +6,15 @@ import api from '../services/api';
 import { toast } from 'react-toastify';
 
 const LIMIT = 6;
+=======
+import { useAuth } from '../context/AuthContext';
+>>>>>>> origin/feature/cors-proxy-config
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
     const token = localStorage.getItem('token');
 
+<<<<<<< HEAD
     // Posts state
     const [posts, setPosts] = useState([]);
     const [pagination, setPagination] = useState(null);
@@ -24,11 +29,25 @@ const Dashboard = () => {
     try {
         jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
     } catch { jwtPayload = null; }
+=======
+
+    if (!user) return null;
+
+
+    // Decode JWT to show raw payload (for educational demo)
+    let jwtPayload = null;
+    try {
+        jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
+    } catch {
+        jwtPayload = null;
+    }
+>>>>>>> origin/feature/cors-proxy-config
 
     const memberSince = user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
         : '—';
 
+<<<<<<< HEAD
     // Fetch the user's posts for a given page
     const fetchPosts = useCallback(async (page) => {
         setPostsLoading(true);
@@ -73,6 +92,8 @@ const Dashboard = () => {
 
     if (!user) return null;
 
+=======
+>>>>>>> origin/feature/cors-proxy-config
     return (
         <div style={styles.page}>
             <div style={styles.blob1} />
@@ -87,25 +108,44 @@ const Dashboard = () => {
                     </div>
                     <div style={styles.topBarRight}>
                         <span style={styles.userPill}>👤 {user.name}</span>
+<<<<<<< HEAD
                         <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+=======
+                        <button onClick={logout} style={styles.logoutBtn}>
+                            Logout
+                        </button>
+>>>>>>> origin/feature/cors-proxy-config
                     </div>
                 </header>
 
                 {/* Greeting */}
                 <div style={styles.greetingSection}>
                     <h1 style={styles.greeting}>Welcome back, {user.name.split(' ')[0]}! 🎉</h1>
+<<<<<<< HEAD
                     <p style={styles.greetingSub}>Manage your posts and account from here.</p>
                 </div>
 
                 {/* Top cards grid */}
                 <div style={styles.grid}>
+=======
+                    <p style={styles.greetingSub}>Here&apos;s your account overview and session info.</p>
+                </div>
+
+                {/* Cards grid */}
+                <div style={styles.grid}>
+
+>>>>>>> origin/feature/cors-proxy-config
                     {/* Profile card */}
                     <div style={styles.card}>
                         <div style={styles.cardHeader}>
                             <span style={styles.cardIcon}>👤</span>
                             <h2 style={styles.cardTitle}>Your Profile</h2>
                         </div>
+<<<<<<< HEAD
                         <div>
+=======
+                        <div style={styles.cardBody}>
+>>>>>>> origin/feature/cors-proxy-config
                             <div style={styles.infoRow}>
                                 <span style={styles.infoLabel}>Name</span>
                                 <span style={styles.infoValue}>{user.name}</span>
@@ -123,12 +163,17 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+<<<<<<< HEAD
                     {/* JWT card */}
+=======
+                    {/* JWT info card */}
+>>>>>>> origin/feature/cors-proxy-config
                     <div style={styles.card}>
                         <div style={styles.cardHeader}>
                             <span style={styles.cardIcon}>🔐</span>
                             <h2 style={styles.cardTitle}>Session Token (JWT)</h2>
                         </div>
+<<<<<<< HEAD
                         {jwtPayload && (
                             <>
                                 <div style={styles.infoRow}>
@@ -252,6 +297,62 @@ const Dashboard = () => {
                             )}
                         </>
                     )}
+=======
+                        <div style={styles.cardBody}>
+                            {jwtPayload && (
+                                <>
+                                    <div style={styles.infoRow}>
+                                        <span style={styles.infoLabel}>User ID</span>
+                                        <span style={{ ...styles.infoValue, ...styles.mono }}>{jwtPayload.userId}</span>
+                                    </div>
+                                    <div style={styles.divider} />
+                                    <div style={styles.infoRow}>
+                                        <span style={styles.infoLabel}>Issued At</span>
+                                        <span style={styles.infoValue}>
+                                            {new Date(jwtPayload.iat * 1000).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div style={styles.divider} />
+                                    <div style={styles.infoRow}>
+                                        <span style={styles.infoLabel}>Expires At</span>
+                                        <span style={{ ...styles.infoValue, color: '#10b981' }}>
+                                            {new Date(jwtPayload.exp * 1000).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+                            <div style={styles.tokenBox}>
+                                <p style={styles.tokenLabel}>Raw token stored in localStorage:</p>
+                                <code style={styles.tokenCode}>{token?.slice(0, 60)}...</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Coming soon card */}
+                    <div style={{ ...styles.card, ...styles.cardWide }}>
+                        <div style={styles.cardHeader}>
+                            <span style={styles.cardIcon}>🚀</span>
+                            <h2 style={styles.cardTitle}>What&apos;s Coming</h2>
+                        </div>
+                        <div style={styles.featureGrid}>
+                            {[
+                                { icon: '✍️', title: 'Content Studio', desc: 'Create and publish your content' },
+                                { icon: '📊', title: 'Analytics', desc: 'Track views, likes, and growth' },
+                                { icon: '🎨', title: 'Profile Editor', desc: 'Customise your creator profile' },
+                                { icon: '💬', title: 'Community', desc: 'Connect with other creators' },
+                            ].map((f) => (
+                                <div key={f.title} style={styles.featureItem}>
+                                    <span style={styles.featureIcon}>{f.icon}</span>
+                                    <div>
+                                        <p style={styles.featureTitle}>{f.title}</p>
+                                        <p style={styles.featureDesc}>{f.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+>>>>>>> origin/feature/cors-proxy-config
                 </div>
             </div>
         </div>
@@ -260,6 +361,22 @@ const Dashboard = () => {
 
 // ---------- Styles ----------
 const styles = {
+<<<<<<< HEAD
+=======
+    loadingPage: {
+        minHeight: '100vh',
+        display: 'flex', flexDirection: 'column',
+        justifyContent: 'center', alignItems: 'center', gap: '1rem',
+        background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
+    },
+    loadingSpinner: {
+        width: '40px', height: '40px',
+        border: '3px solid rgba(255,255,255,0.15)',
+        borderTopColor: '#6366f1', borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+    },
+    loadingText: { color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' },
+>>>>>>> origin/feature/cors-proxy-config
     page: {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
@@ -280,7 +397,11 @@ const styles = {
     inner: {
         position: 'relative', zIndex: 1,
         maxWidth: '1100px', margin: '0 auto',
+<<<<<<< HEAD
         padding: '1.5rem 1.5rem 4rem',
+=======
+        padding: '1.5rem 1.5rem 3rem',
+>>>>>>> origin/feature/cors-proxy-config
     },
     topBar: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -308,7 +429,11 @@ const styles = {
         padding: '0.45rem 1.1rem',
         background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
         borderRadius: '8px', color: '#fca5a5', cursor: 'pointer',
+<<<<<<< HEAD
         fontSize: '0.875rem', fontWeight: '600',
+=======
+        fontSize: '0.875rem', fontWeight: '600', transition: 'background 0.2s',
+>>>>>>> origin/feature/cors-proxy-config
     },
     greetingSection: { marginBottom: '2rem' },
     greeting: {
@@ -320,21 +445,35 @@ const styles = {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1.25rem',
+<<<<<<< HEAD
         marginBottom: '2rem',
+=======
+>>>>>>> origin/feature/cors-proxy-config
     },
     card: {
         background: 'rgba(255,255,255,0.06)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)',
+<<<<<<< HEAD
         padding: '1.5rem',
     },
     cardHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' },
     cardIcon: { fontSize: '1.3rem' },
     cardTitle: { fontSize: '1rem', fontWeight: '700', color: '#fff', margin: 0 },
+=======
+        padding: '1.5rem', overflow: 'hidden',
+    },
+    cardWide: { gridColumn: '1 / -1' },
+    cardHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' },
+    cardIcon: { fontSize: '1.3rem' },
+    cardTitle: { fontSize: '1rem', fontWeight: '700', color: '#fff', margin: 0 },
+    cardBody: {},
+>>>>>>> origin/feature/cors-proxy-config
     infoRow: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0.6rem 0',
     },
+<<<<<<< HEAD
     infoLabel: { fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' },
     infoValue: { fontSize: '0.875rem', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%', wordBreak: 'break-all' },
     divider: { height: '1px', background: 'rgba(255,255,255,0.06)' },
@@ -462,6 +601,36 @@ const styles = {
     },
     pageInfo: { fontSize: '0.875rem', color: '#fff', fontWeight: '600' },
     pageInfoLight: { color: 'rgba(255,255,255,0.4)', fontWeight: '400' },
+=======
+    infoLabel: { fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' },
+    infoValue: { fontSize: '0.9rem', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%', wordBreak: 'break-all' },
+    mono: { fontFamily: 'monospace', fontSize: '0.78rem' },
+    divider: { height: '1px', background: 'rgba(255,255,255,0.06)' },
+    tokenBox: {
+        marginTop: '1rem', padding: '0.875rem',
+        background: 'rgba(0,0,0,0.25)', borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.08)',
+    },
+    tokenLabel: { fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 0.5rem' },
+    tokenCode: {
+        fontSize: '0.72rem', color: '#a5b4fc',
+        wordBreak: 'break-all', lineHeight: 1.6,
+        fontFamily: 'monospace',
+    },
+    featureGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1rem',
+    },
+    featureItem: {
+        display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+        padding: '1rem', background: 'rgba(255,255,255,0.04)',
+        borderRadius: '10px', border: '1px solid rgba(255,255,255,0.07)',
+    },
+    featureIcon: { fontSize: '1.4rem', flexShrink: 0 },
+    featureTitle: { color: '#fff', fontWeight: '600', fontSize: '0.9rem', margin: '0 0 0.2rem' },
+    featureDesc: { color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: 0 },
+>>>>>>> origin/feature/cors-proxy-config
 };
 
 export default Dashboard;

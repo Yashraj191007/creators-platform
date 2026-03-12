@@ -25,7 +25,7 @@ app.use(express.json());
 
 // Health check route
 app.get('/api/health', (req, res) => {
-    res.json({ message: 'Server is running!' });
+    res.json({ message: 'Server is running!', timestamp: new Date() });
 });
 
 // Routes
@@ -43,5 +43,5 @@ app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
