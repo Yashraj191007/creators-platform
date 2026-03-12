@@ -1,63 +1,49 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-// ---------- JWT expiry helper ----------
-const isTokenExpired = (token) => {
-    if (!token) return true;
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.exp < Date.now() / 1000;
-    } catch {
-        return true;
-    }
-};
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const Dashboard = () => {
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const token = localStorage.getItem('token');
+
+    // Fetch registered users using the centralized api utility
+    // The request interceptor automatically attaches the JWT token
+    const [users, setUsers] = useState([]);
+    const [usersLoading, setUsersLoading] = useState(true);
+    const [usersError, setUsersError] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const userData = localStorage.getItem('user');
+        const fetchUsers = async () => {
+            try {
+                const response = await api.get('/api/users');
+                // axios puts response body in response.data
+                setUsers(response.data);
+            } catch (error) {
+                if (error.response) {
+                    setUsersError(error.response.data?.message || 'Failed to fetch users.');
+                } else {
+                    setUsersError('Network error – could not reach the server.');
+                }
+            } finally {
+                setUsersLoading(false);
+            }
+        };
 
-        // Redirect if not logged in or token expired
-        if (!token || !userData || isTokenExpired(token)) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/login');
-            return;
-        }
+        fetchUsers();
+    }, []);
 
-        try {
-            setUser(JSON.parse(userData));
-        } catch {
-            navigate('/login');
-        }
-    }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-    };
+    if (!user) return null;
 
-    if (!user) {
-        return (
-            <div style={styles.loadingPage}>
-                <div style={styles.loadingSpinner} />
-                <p style={styles.loadingText}>Loading your dashboard...</p>
-            </div>
-        );
-    }
 
     // Decode JWT to show raw payload (for educational demo)
-    const token = localStorage.getItem('token');
     let jwtPayload = null;
     try {
-        jwtPayload = JSON.parse(atob(token.split('.')[1]));
+        jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
     } catch {
         jwtPayload = null;
     }
+
 
     const memberSince = user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -77,7 +63,7 @@ const Dashboard = () => {
                     </div>
                     <div style={styles.topBarRight}>
                         <span style={styles.userPill}>👤 {user.name}</span>
-                        <button onClick={handleLogout} style={styles.logoutBtn}>
+                        <button onClick={logout} style={styles.logoutBtn}>
                             Logout
                         </button>
                     </div>
@@ -150,6 +136,44 @@ const Dashboard = () => {
                                 <code style={styles.tokenCode}>{token?.slice(0, 60)}...</code>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Registered Users card – demonstrates authenticated API call */}
+                    <div style={{ ...styles.card, ...styles.cardWide }}>
+                        <div style={styles.cardHeader}>
+                            <span style={styles.cardIcon}>👥</span>
+                            <h2 style={styles.cardTitle}>Registered Users</h2>
+                            <span style={styles.apiBadge}>🔐 Protected API · api.get('/api/users')</span>
+                        </div>
+                        {usersLoading && (
+                            <p style={styles.statusText}>Loading users via authenticated request…</p>
+                        )}
+                        {usersError && (
+                            <p style={{ ...styles.statusText, color: '#fca5a5' }}>⚠️ {usersError}</p>
+                        )}
+                        {!usersLoading && !usersError && (
+                            <div style={styles.usersList}>
+                                {users.map((u) => (
+                                    <div key={u._id} style={styles.userRow}>
+                                        <div style={styles.userAvatar}>
+                                            {u.name?.[0]?.toUpperCase() || '?'}
+                                        </div>
+                                        <div style={styles.userInfo}>
+                                            <p style={styles.userName}>{u.name}</p>
+                                            <p style={styles.userEmail}>{u.email}</p>
+                                        </div>
+                                        <span style={styles.userDate}>
+                                            {u.createdAt
+                                                ? new Date(u.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+                                                : '—'}
+                                        </span>
+                                    </div>
+                                ))}
+                                {users.length === 0 && (
+                                    <p style={styles.statusText}>No users found.</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Coming soon card */}
@@ -301,6 +325,51 @@ const styles = {
     featureIcon: { fontSize: '1.4rem', flexShrink: 0 },
     featureTitle: { color: '#fff', fontWeight: '600', fontSize: '0.9rem', margin: '0 0 0.2rem' },
     featureDesc: { color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: 0 },
+    // Users card styles
+    apiBadge: {
+        marginLeft: 'auto',
+        padding: '0.2rem 0.65rem',
+        background: 'rgba(16,185,129,0.15)',
+        border: '1px solid rgba(16,185,129,0.3)',
+        borderRadius: '999px',
+        color: '#6ee7b7',
+        fontSize: '0.72rem',
+        fontWeight: '500',
+        fontFamily: 'monospace',
+    },
+    statusText: {
+        color: 'rgba(255,255,255,0.45)',
+        fontSize: '0.875rem',
+        textAlign: 'center',
+        padding: '1rem 0',
+        margin: 0,
+    },
+    usersList: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+    },
+    userRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.875rem',
+        padding: '0.65rem 0.75rem',
+        background: 'rgba(255,255,255,0.04)',
+        borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.06)',
+    },
+    userAvatar: {
+        flexShrink: 0,
+        width: '36px', height: '36px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontWeight: '700', fontSize: '0.9rem',
+    },
+    userInfo: { flex: 1, minWidth: 0 },
+    userName: { color: '#fff', fontWeight: '600', fontSize: '0.875rem', margin: '0 0 0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    userEmail: { color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    userDate: { flexShrink: 0, color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem' },
 };
 
 export default Dashboard;
