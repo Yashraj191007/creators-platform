@@ -4,6 +4,8 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import postRoutes from './routes/postRoutes.js';
+import errorHandler from './middlewares/errorMiddleware.js';
 
 // Load environment variables
 dotenv.config();
@@ -27,13 +29,17 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
-app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
+
+// Global Error Handler MUST be defined LAST
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {

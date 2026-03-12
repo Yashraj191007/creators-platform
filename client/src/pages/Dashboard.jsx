@@ -1,9 +1,35 @@
+<<<<<<< HEAD
+import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { toast } from 'react-toastify';
+
+const LIMIT = 6;
+=======
+import { useAuth } from '../context/AuthContext';
+>>>>>>> origin/feature/cors-proxy-config
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
     const token = localStorage.getItem('token');
 
+<<<<<<< HEAD
+    // Posts state
+    const [posts, setPosts] = useState([]);
+    const [pagination, setPagination] = useState(null);
+    const [postsLoading, setPostsLoading] = useState(true);
+    const [postsError, setPostsError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+
+
+
+    // Decode JWT payload for display
+    let jwtPayload = null;
+    try {
+        jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
+    } catch { jwtPayload = null; }
+=======
 
     if (!user) return null;
 
@@ -15,11 +41,59 @@ const Dashboard = () => {
     } catch {
         jwtPayload = null;
     }
+>>>>>>> origin/feature/cors-proxy-config
 
     const memberSince = user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
         : '—';
 
+<<<<<<< HEAD
+    // Fetch the user's posts for a given page
+    const fetchPosts = useCallback(async (page) => {
+        setPostsLoading(true);
+        setPostsError('');
+        try {
+            const response = await api.get(`/api/posts?page=${page}&limit=${LIMIT}`);
+            setPosts(response.data.posts);
+            setPagination(response.data.pagination);
+        } catch (error) {
+            setPostsError(error.response?.data?.message || 'Failed to load posts.');
+        } finally {
+            setPostsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchPosts(currentPage);
+    }, [currentPage, fetchPosts]);
+
+    const handlePrev = () => { if (pagination?.hasPrevPage) setCurrentPage((p) => p - 1); };
+    const handleNext = () => { if (pagination?.hasNextPage) setCurrentPage((p) => p + 1); };
+
+    const handleDelete = async (postId) => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this post? This action cannot be undone.'
+        );
+        if (!confirmed) return;
+
+        try {
+            const response = await api.delete(`/api/posts/${postId}`);
+            if (response.data.success) {
+                // Optimistic UI update
+                setPosts(posts.filter(post => post._id !== postId));
+                setPagination(prev => prev ? { ...prev, totalPosts: prev.totalPosts - 1 } : null);
+                toast.success('Post deleted successfully');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete post');
+        }
+    };
+
+    if (!user) return null;
+
+=======
+>>>>>>> origin/feature/cors-proxy-config
     return (
         <div style={styles.page}>
             <div style={styles.blob1} />
@@ -34,28 +108,44 @@ const Dashboard = () => {
                     </div>
                     <div style={styles.topBarRight}>
                         <span style={styles.userPill}>👤 {user.name}</span>
+<<<<<<< HEAD
+                        <button onClick={logout} style={styles.logoutBtn}>Logout</button>
+=======
                         <button onClick={logout} style={styles.logoutBtn}>
                             Logout
                         </button>
+>>>>>>> origin/feature/cors-proxy-config
                     </div>
                 </header>
 
                 {/* Greeting */}
                 <div style={styles.greetingSection}>
                     <h1 style={styles.greeting}>Welcome back, {user.name.split(' ')[0]}! 🎉</h1>
+<<<<<<< HEAD
+                    <p style={styles.greetingSub}>Manage your posts and account from here.</p>
+                </div>
+
+                {/* Top cards grid */}
+                <div style={styles.grid}>
+=======
                     <p style={styles.greetingSub}>Here&apos;s your account overview and session info.</p>
                 </div>
 
                 {/* Cards grid */}
                 <div style={styles.grid}>
 
+>>>>>>> origin/feature/cors-proxy-config
                     {/* Profile card */}
                     <div style={styles.card}>
                         <div style={styles.cardHeader}>
                             <span style={styles.cardIcon}>👤</span>
                             <h2 style={styles.cardTitle}>Your Profile</h2>
                         </div>
+<<<<<<< HEAD
+                        <div>
+=======
                         <div style={styles.cardBody}>
+>>>>>>> origin/feature/cors-proxy-config
                             <div style={styles.infoRow}>
                                 <span style={styles.infoLabel}>Name</span>
                                 <span style={styles.infoValue}>{user.name}</span>
@@ -73,12 +163,141 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+<<<<<<< HEAD
+                    {/* JWT card */}
+=======
                     {/* JWT info card */}
+>>>>>>> origin/feature/cors-proxy-config
                     <div style={styles.card}>
                         <div style={styles.cardHeader}>
                             <span style={styles.cardIcon}>🔐</span>
                             <h2 style={styles.cardTitle}>Session Token (JWT)</h2>
                         </div>
+<<<<<<< HEAD
+                        {jwtPayload && (
+                            <>
+                                <div style={styles.infoRow}>
+                                    <span style={styles.infoLabel}>User ID</span>
+                                    <span style={{ ...styles.infoValue, fontFamily: 'monospace', fontSize: '0.75rem' }}>{jwtPayload.userId}</span>
+                                </div>
+                                <div style={styles.divider} />
+                                <div style={styles.infoRow}>
+                                    <span style={styles.infoLabel}>Issued At</span>
+                                    <span style={styles.infoValue}>{new Date(jwtPayload.iat * 1000).toLocaleString()}</span>
+                                </div>
+                                <div style={styles.divider} />
+                                <div style={styles.infoRow}>
+                                    <span style={styles.infoLabel}>Expires At</span>
+                                    <span style={{ ...styles.infoValue, color: '#10b981' }}>{new Date(jwtPayload.exp * 1000).toLocaleString()}</span>
+                                </div>
+                            </>
+                        )}
+                        <div style={styles.tokenBox}>
+                            <p style={styles.tokenLabel}>Raw token (localStorage):</p>
+                            <code style={styles.tokenCode}>{token?.slice(0, 60)}…</code>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Posts section */}
+                <div style={styles.postsSection}>
+                    {/* Section header */}
+                    <div style={styles.postsHeader}>
+                        <div>
+                            <h2 style={styles.postsTitle}>📝 Your Posts</h2>
+                            {pagination && (
+                                <p style={styles.postsMeta}>
+                                    {pagination.totalPosts} post{pagination.totalPosts !== 1 ? 's' : ''} total
+                                    {pagination.totalPages > 1 && ` · Page ${pagination.currentPage} of ${pagination.totalPages}`}
+                                </p>
+                            )}
+                        </div>
+                        <Link to="/create-post" style={styles.createBtn}>
+                            ✦ Create Post
+                        </Link>
+                    </div>
+
+                    {/* Posts content */}
+                    {postsLoading && (
+                        <div style={styles.stateBox}>
+                            <span style={styles.spinner} />
+                            <p style={styles.stateText}>Loading your posts…</p>
+                        </div>
+                    )}
+
+                    {postsError && !postsLoading && (
+                        <div style={styles.stateBox}>
+                            <p style={{ ...styles.stateText, color: '#fca5a5' }}>⚠️ {postsError}</p>
+                        </div>
+                    )}
+
+                    {!postsLoading && !postsError && posts.length === 0 && (
+                        <div style={styles.emptyBox}>
+                            <span style={styles.emptyIcon}>✍️</span>
+                            <p style={styles.emptyTitle}>No posts yet</p>
+                            <p style={styles.emptySubtitle}>Share your first idea with the community!</p>
+                            <Link to="/create-post" style={styles.emptyBtn}>Create your first post →</Link>
+                        </div>
+                    )}
+
+                    {!postsLoading && !postsError && posts.length > 0 && (
+                        <>
+                            <div style={styles.postsGrid}>
+                                {posts.map((post) => (
+                                    <div key={post._id} style={styles.postCard}>
+                                        <h3 style={styles.postTitle}>{post.title}</h3>
+                                        <p style={styles.postExcerpt}>{post.excerpt || post.content?.substring(0, 120) + '…'}</p>
+                                        <div style={styles.postFooter}>
+                                            <span style={styles.postDate}>
+                                                {new Date(post.createdAt).toLocaleDateString('en-IN', {
+                                                    day: 'numeric', month: 'short', year: 'numeric',
+                                                })}
+                                            </span>
+                                            <span style={styles.postBadge}>Published</span>
+                                        </div>
+                                        <div style={styles.postActions}>
+                                            <Link to={`/edit/${post._id}`} style={styles.editBtn}>
+                                                Edit
+                                            </Link>
+                                            <button 
+                                                onClick={() => handleDelete(post._id)}
+                                                style={styles.deleteBtn}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Pagination controls */}
+                            {pagination && pagination.totalPages > 1 && (
+                                <div style={styles.paginationBar}>
+                                    <button
+                                        onClick={handlePrev}
+                                        disabled={!pagination.hasPrevPage}
+                                        style={pagination.hasPrevPage ? styles.pageBtn : { ...styles.pageBtn, ...styles.pageBtnDisabled }}
+                                    >
+                                        ← Previous
+                                    </button>
+
+                                    <span style={styles.pageInfo}>
+                                        Page {pagination.currentPage} of {pagination.totalPages}
+                                        <span style={styles.pageInfoLight}> · {pagination.totalPosts} posts</span>
+                                    </span>
+
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={!pagination.hasNextPage}
+                                        style={pagination.hasNextPage ? styles.pageBtn : { ...styles.pageBtn, ...styles.pageBtnDisabled }}
+                                    >
+                                        Next →
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+=======
                         <div style={styles.cardBody}>
                             {jwtPayload && (
                                 <>
@@ -133,6 +352,7 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+>>>>>>> origin/feature/cors-proxy-config
                 </div>
             </div>
         </div>
@@ -141,6 +361,8 @@ const Dashboard = () => {
 
 // ---------- Styles ----------
 const styles = {
+<<<<<<< HEAD
+=======
     loadingPage: {
         minHeight: '100vh',
         display: 'flex', flexDirection: 'column',
@@ -154,6 +376,7 @@ const styles = {
         animation: 'spin 0.8s linear infinite',
     },
     loadingText: { color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' },
+>>>>>>> origin/feature/cors-proxy-config
     page: {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
@@ -174,7 +397,11 @@ const styles = {
     inner: {
         position: 'relative', zIndex: 1,
         maxWidth: '1100px', margin: '0 auto',
+<<<<<<< HEAD
+        padding: '1.5rem 1.5rem 4rem',
+=======
         padding: '1.5rem 1.5rem 3rem',
+>>>>>>> origin/feature/cors-proxy-config
     },
     topBar: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -202,7 +429,11 @@ const styles = {
         padding: '0.45rem 1.1rem',
         background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
         borderRadius: '8px', color: '#fca5a5', cursor: 'pointer',
+<<<<<<< HEAD
+        fontSize: '0.875rem', fontWeight: '600',
+=======
         fontSize: '0.875rem', fontWeight: '600', transition: 'background 0.2s',
+>>>>>>> origin/feature/cors-proxy-config
     },
     greetingSection: { marginBottom: '2rem' },
     greeting: {
@@ -214,11 +445,22 @@ const styles = {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1.25rem',
+<<<<<<< HEAD
+        marginBottom: '2rem',
+=======
+>>>>>>> origin/feature/cors-proxy-config
     },
     card: {
         background: 'rgba(255,255,255,0.06)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)',
+<<<<<<< HEAD
+        padding: '1.5rem',
+    },
+    cardHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' },
+    cardIcon: { fontSize: '1.3rem' },
+    cardTitle: { fontSize: '1rem', fontWeight: '700', color: '#fff', margin: 0 },
+=======
         padding: '1.5rem', overflow: 'hidden',
     },
     cardWide: { gridColumn: '1 / -1' },
@@ -226,10 +468,140 @@ const styles = {
     cardIcon: { fontSize: '1.3rem' },
     cardTitle: { fontSize: '1rem', fontWeight: '700', color: '#fff', margin: 0 },
     cardBody: {},
+>>>>>>> origin/feature/cors-proxy-config
     infoRow: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0.6rem 0',
     },
+<<<<<<< HEAD
+    infoLabel: { fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' },
+    infoValue: { fontSize: '0.875rem', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%', wordBreak: 'break-all' },
+    divider: { height: '1px', background: 'rgba(255,255,255,0.06)' },
+    tokenBox: {
+        marginTop: '1rem', padding: '0.75rem',
+        background: 'rgba(0,0,0,0.25)', borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.08)',
+    },
+    tokenLabel: { fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 0.4rem' },
+    tokenCode: { fontSize: '0.7rem', color: '#a5b4fc', wordBreak: 'break-all', fontFamily: 'monospace' },
+    // Posts section
+    postsSection: {
+        background: 'rgba(255,255,255,0.04)',
+        borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)',
+        padding: '1.75rem',
+    },
+    postsHeader: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap',
+    },
+    postsTitle: { fontSize: '1.15rem', fontWeight: '800', color: '#fff', margin: '0 0 0.25rem' },
+    postsMeta: { fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', margin: 0 },
+    createBtn: {
+        padding: '0.55rem 1.2rem',
+        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+        borderRadius: '10px', color: '#fff',
+        fontSize: '0.875rem', fontWeight: '700',
+        textDecoration: 'none', flexShrink: 0,
+        boxShadow: '0 4px 15px rgba(99,102,241,0.35)',
+        transition: 'opacity 0.2s',
+    },
+    stateBox: {
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '3rem 1rem', gap: '0.75rem',
+    },
+    spinner: {
+        display: 'inline-block', width: '28px', height: '28px',
+        border: '3px solid rgba(255,255,255,0.15)', borderTopColor: '#6366f1',
+        borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+    },
+    stateText: { color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', margin: 0 },
+    emptyBox: {
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '3.5rem 1rem', gap: '0.6rem',
+        background: 'rgba(255,255,255,0.03)', borderRadius: '14px',
+        border: '1px dashed rgba(255,255,255,0.1)',
+    },
+    emptyIcon: { fontSize: '2.5rem', marginBottom: '0.25rem' },
+    emptyTitle: { color: '#fff', fontWeight: '700', fontSize: '1rem', margin: 0 },
+    emptySubtitle: { color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', margin: 0 },
+    emptyBtn: {
+        marginTop: '0.75rem', padding: '0.6rem 1.4rem',
+        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+        borderRadius: '10px', color: '#fff',
+        fontSize: '0.875rem', fontWeight: '700', textDecoration: 'none',
+        boxShadow: '0 4px 15px rgba(99,102,241,0.35)',
+    },
+    postsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '1rem',
+        marginBottom: '1.5rem',
+    },
+    postCard: {
+        background: 'rgba(255,255,255,0.06)',
+        borderRadius: '14px', border: '1px solid rgba(255,255,255,0.09)',
+        padding: '1.25rem',
+        display: 'flex', flexDirection: 'column', gap: '0.5rem',
+        transition: 'border-color 0.2s',
+    },
+    postTitle: {
+        fontSize: '0.95rem', fontWeight: '700', color: '#fff',
+        margin: 0, lineHeight: 1.4,
+        display: '-webkit-box', WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+    },
+    postExcerpt: {
+        fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)',
+        margin: 0, lineHeight: 1.6, flex: 1,
+        display: '-webkit-box', WebkitLineClamp: 3,
+        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+    },
+    postFooter: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginTop: '0.5rem',
+    },
+    postDate: { fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' },
+    postBadge: {
+        fontSize: '0.68rem', fontWeight: '600',
+        padding: '0.15rem 0.6rem',
+        background: 'rgba(16,185,129,0.15)',
+        border: '1px solid rgba(16,185,129,0.3)',
+        borderRadius: '999px', color: '#6ee7b7',
+    },
+    postActions: {
+        display: 'flex', gap: '0.75rem', marginTop: '1rem',
+        paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)',
+    },
+    editBtn: {
+        flex: 1, textAlign: 'center', padding: '0.5rem',
+        background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)',
+        borderRadius: '8px', color: '#a5b4fc', fontSize: '0.8rem', fontWeight: '600',
+        textDecoration: 'none', cursor: 'pointer', transition: 'background 0.2s',
+    },
+    deleteBtn: {
+        flex: 1, padding: '0.5rem',
+        background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
+        borderRadius: '8px', color: '#fca5a5', fontSize: '0.8rem', fontWeight: '600',
+        cursor: 'pointer', transition: 'background 0.2s',
+    },
+    // Pagination
+    paginationBar: {
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        gap: '1.25rem', flexWrap: 'wrap',
+    },
+    pageBtn: {
+        padding: '0.55rem 1.25rem',
+        background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.35)',
+        borderRadius: '10px', color: '#a5b4fc', cursor: 'pointer',
+        fontSize: '0.875rem', fontWeight: '600', transition: 'background 0.2s',
+    },
+    pageBtnDisabled: {
+        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+        color: 'rgba(255,255,255,0.2)', cursor: 'not-allowed',
+    },
+    pageInfo: { fontSize: '0.875rem', color: '#fff', fontWeight: '600' },
+    pageInfoLight: { color: 'rgba(255,255,255,0.4)', fontWeight: '400' },
+=======
     infoLabel: { fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' },
     infoValue: { fontSize: '0.9rem', color: '#fff', fontWeight: '500', textAlign: 'right', maxWidth: '60%', wordBreak: 'break-all' },
     mono: { fontFamily: 'monospace', fontSize: '0.78rem' },
@@ -258,6 +630,7 @@ const styles = {
     featureIcon: { fontSize: '1.4rem', flexShrink: 0 },
     featureTitle: { color: '#fff', fontWeight: '600', fontSize: '0.9rem', margin: '0 0 0.2rem' },
     featureDesc: { color: 'rgba(255,255,255,0.45)', fontSize: '0.8rem', margin: 0 },
+>>>>>>> origin/feature/cors-proxy-config
 };
 
 export default Dashboard;
