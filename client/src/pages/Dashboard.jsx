@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { toast as hotToast } from 'react-hot-toast';
 import { socket } from '../services/socket';
 
 const LIMIT = 6;
@@ -50,6 +51,7 @@ const Dashboard = () => {
     }, [currentPage, fetchPosts]);
 
     useEffect(() => {
+        socket.auth = { token: localStorage.getItem('token') };
         socket.connect();
 
         const onConnect = () => {
@@ -64,14 +66,20 @@ const Dashboard = () => {
             console.error('Socket.io connection error:', error);
         };
 
+        const onNewPost = (data) => {
+            hotToast.success(data.message);
+        };
+
         socket.on('connect', onConnect);
         socket.on('disconnect', onDisconnect);
         socket.on('connect_error', onConnectError);
+        socket.on('newPost', onNewPost);
 
         return () => {
             socket.off('connect', onConnect);
             socket.off('disconnect', onDisconnect);
             socket.off('connect_error', onConnectError);
+            socket.off('newPost', onNewPost);
             socket.disconnect();
         };
     }, []);

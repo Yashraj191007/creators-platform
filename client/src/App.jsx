@@ -11,12 +11,14 @@ import EditPost from './pages/EditPost';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ToastContainer position="bottom-right" />
+        <Toaster />
         <Routes>
           {/* Public pages — accessible without login */}
           <Route path="/" element={<Home />} />
