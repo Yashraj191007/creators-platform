@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
     // Fetch registered users using the centralized api utility
@@ -30,6 +32,29 @@ const Dashboard = () => {
         };
 
         fetchUsers();
+    }, []);
+
+    // Fetch posts created by the logged-in user
+    const [posts, setPosts] = useState([]);
+    const [postsLoading, setPostsLoading] = useState(true);
+    const [postsError, setPostsError] = useState('');
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await api.get('/api/posts');
+                setPosts(response.data);
+            } catch (error) {
+                if (error.response) {
+                    setPostsError(error.response.data?.message || 'Failed to fetch posts.');
+                } else {
+                    setPostsError('Network error – could not reach the server.');
+                }
+            } finally {
+                setPostsLoading(false);
+            }
+        };
+        fetchPosts();
     }, []);
 
 
@@ -77,6 +102,63 @@ const Dashboard = () => {
 
                 {/* Cards grid */}
                 <div style={styles.grid}>
+
+                    {/* My Posts card */}
+                    <div style={{ ...styles.card, ...styles.cardWide }}>
+                        <div style={styles.cardHeader}>
+                            <span style={styles.cardIcon}>📰</span>
+                            <h2 style={styles.cardTitle}>My Posts</h2>
+                            <button
+                                onClick={() => navigate('/create-post')}
+                                style={styles.createPostBtn}
+                            >
+                                + New Post
+                            </button>
+                        </div>
+                        {postsLoading && (
+                            <p style={styles.statusText}>Loading posts…</p>
+                        )}
+                        {postsError && (
+                            <p style={{ ...styles.statusText, color: '#fca5a5' }}>⚠️ {postsError}</p>
+                        )}
+                        {!postsLoading && !postsError && posts.length === 0 && (
+                            <div style={styles.emptyPosts}>
+                                <p style={styles.statusText}>No posts yet.</p>
+                                <Link to="/create-post" style={styles.emptyPostsLink}>
+                                    Create your first post →
+                                </Link>
+                            </div>
+                        )}
+                        {!postsLoading && !postsError && posts.length > 0 && (
+                            <div style={styles.postsGrid}>
+                                {posts.map((post) => (
+                                    <div key={post._id} style={styles.postCard}>
+                                        {/* Cover image — only rendered when a Cloudinary URL is stored */}
+                                        {post.coverImage && (
+                                            <img
+                                                src={post.coverImage}
+                                                alt={`Cover image for ${post.title}`}
+                                                style={styles.postCoverImage}
+                                            />
+                                        )}
+                                        <div style={styles.postBody}>
+                                            <p style={styles.postTitle}>{post.title}</p>
+                                            <p style={styles.postContent}>
+                                                {post.content.length > 120
+                                                    ? post.content.slice(0, 120) + '…'
+                                                    : post.content}
+                                            </p>
+                                            <p style={styles.postDate}>
+                                                {new Date(post.createdAt).toLocaleDateString('en-IN', {
+                                                    year: 'numeric', month: 'short', day: 'numeric',
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Profile card */}
                     <div style={styles.card}>
@@ -281,6 +363,48 @@ const styles = {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1.25rem',
+    },
+    createPostBtn: {
+        marginLeft: 'auto',
+        padding: '0.35rem 0.9rem',
+        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+        border: 'none', borderRadius: '8px',
+        color: '#fff', fontWeight: '700', fontSize: '0.8rem',
+        cursor: 'pointer',
+    },
+    emptyPosts: {
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+        padding: '1.5rem 0',
+    },
+    emptyPostsLink: {
+        color: '#a5b4fc', fontSize: '0.875rem', fontWeight: '600', textDecoration: 'none',
+    },
+    postsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: '1rem',
+    },
+    postCard: {
+        background: 'rgba(0,0,0,0.2)',
+        borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+    },
+    postCoverImage: {
+        width: '100%', height: '150px', objectFit: 'cover',
+        display: 'block',
+    },
+    postBody: { padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1 },
+    postTitle: {
+        color: '#fff', fontWeight: '700', fontSize: '0.9rem',
+        margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+    },
+    postContent: {
+        color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', margin: 0, lineHeight: 1.5,
+        flex: 1,
+    },
+    postDate: {
+        color: 'rgba(255,255,255,0.25)', fontSize: '0.72rem', margin: 0, marginTop: '0.4rem',
     },
     card: {
         background: 'rgba(255,255,255,0.06)',
