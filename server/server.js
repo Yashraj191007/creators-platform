@@ -8,7 +8,7 @@ import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import uploadRoutes from './routes/upload.js';
-import errorHandler from './middlewares/errorMiddleware.js';
+import errorHandler from './middleware/errorMiddleware.js';
 import jwt from 'jsonwebtoken';
 
 // Load environment variables
