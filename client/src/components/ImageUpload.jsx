@@ -1,198 +1,113 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const MAX_SIZE_MB = 5;
-const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ImageUpload = ({ onUpload }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [error, setError] = useState('');
 
-/**
- * ImageUpload
- *
- * Props:
- *   onUpload(formData)  — called with a FormData object when a valid file is chosen
- *   onClear()           — called when the user removes the selected image
- *   disabled            — disables the control (e.g. while uploading)
- */
-const ImageUpload = ({ onUpload, onClear, disabled = false }) => {
-    const [preview, setPreview] = useState(null);  // blob URL for <img>
-    const [error, setError] = useState('');
-    const [fileName, setFileName] = useState('');
-    const fileInputRef = useRef(null);
-    const blobUrlRef = useRef(null);  // track current blob URL for cleanup
+  const validateFile = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
 
-    // Clean up the blob URL when the component unmounts or preview changes
-    useEffect(() => {
-        return () => {
-            if (blobUrlRef.current) {
-                URL.revokeObjectURL(blobUrlRef.current);
-            }
-        };
-    }, []);
+    if (!allowedTypes.includes(file.type)) {
+      return 'Please select an image file (JPEG, PNG, WebP, or GIF)';
+    }
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    if (file.size > maxSizeInBytes) {
+      return `File is too large. Maximum size is 5MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`;
+    }
 
-        setError('');
+    return null; // null means no error
+  };
 
-        // --- Client-side validation ---
-        if (!ACCEPTED_TYPES.includes(file.type)) {
-            setError('Only JPEG, PNG, GIF, or WebP images are allowed.');
-            e.target.value = '';
-            return;
-        }
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
 
-        if (file.size > MAX_SIZE_BYTES) {
-            setError(`File is too large. Maximum size is ${MAX_SIZE_MB} MB.`);
-            e.target.value = '';
-            return;
-        }
+    // If user cancels the picker without selecting, files[0] will be undefined
+    if (!file) return;
 
-        // Revoke the old blob URL before creating a new one
-        if (blobUrlRef.current) {
-            URL.revokeObjectURL(blobUrlRef.current);
-        }
+    // Clear previous errors
+    setError('');
 
-        const blobUrl = URL.createObjectURL(file);
-        blobUrlRef.current = blobUrl;
-        setPreview(blobUrl);
-        setFileName(file.name);
+    // Validate the file
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      return;
+    }
 
-        // Build FormData and pass it to the parent
-        const formData = new FormData();
-        formData.append('image', file);
-        onUpload(formData);
+    // Set the file and generate a preview
+    setSelectedFile(file);
+
+    // Revoke previous preview URL to prevent memory leaks
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  useEffect(() => {
+    // This runs when previewUrl changes or the component unmounts
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
     };
+  }, [previewUrl]);
 
-    const handleClear = () => {
-        if (blobUrlRef.current) {
-            URL.revokeObjectURL(blobUrlRef.current);
-            blobUrlRef.current = null;
-        }
-        setPreview(null);
-        setFileName('');
-        setError('');
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        if (onClear) onClear();
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    return (
-        <div style={styles.wrapper}>
-            {/* Drop zone / click to browse */}
-            {!preview && (
-                <label
-                    style={{
-                        ...styles.dropZone,
-                        ...(disabled ? styles.disabled : {}),
-                    }}
-                    htmlFor="image-upload-input"
-                >
-                    <span style={styles.uploadIcon}>🖼️</span>
-                    <span style={styles.dropText}>Click to choose a cover image</span>
-                    <span style={styles.dropSub}>JPEG, PNG, GIF or WebP · Max {MAX_SIZE_MB} MB</span>
-                    <input
-                        id="image-upload-input"
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        disabled={disabled}
-                        style={{ display: 'none' }}
-                    />
-                </label>
-            )}
+    if (!selectedFile) {
+      setError('Please select an image first');
+      return;
+    }
 
-            {/* Preview */}
-            {preview && (
-                <div style={styles.previewWrapper}>
-                    <img src={preview} alt="Cover preview" style={styles.previewImg} />
-                    <div style={styles.previewMeta}>
-                        <span style={styles.fileName}>📎 {fileName}</span>
-                        {!disabled && (
-                            <button
-                                type="button"
-                                onClick={handleClear}
-                                style={styles.clearBtn}
-                                title="Remove image"
-                            >
-                                ✕ Remove
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
+    // Create FormData and append the file
+    const formData = new FormData();
+    formData.append('image', selectedFile); // 'image' must match upload.single('image') on the backend
 
-            {/* Validation error */}
-            {error && <p style={styles.error}>⚠️ {error}</p>}
+    // Pass formData up to the parent component via the onUpload prop
+    // The parent will handle the actual API call
+    if (onUpload) {
+      onUpload(formData);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        onChange={handleFileChange}
+      />
+      {error && (
+        <p style={{ color: 'red' }}>
+          {error}
+        </p>
+      )}
+      {previewUrl && (
+        <div>
+          <p>Preview:</p>
+          <img
+            src={previewUrl}
+            alt="Selected file preview"
+            style={{ width: '200px', height: '200px', objectFit: 'cover' }}
+          />
         </div>
-    );
-};
-
-const styles = {
-    wrapper: { display: 'flex', flexDirection: 'column', gap: '0.75rem' },
-    dropZone: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '0.4rem',
-        padding: '2rem 1.5rem',
-        border: '2px dashed rgba(99,102,241,0.45)',
-        borderRadius: '14px',
-        background: 'rgba(99,102,241,0.06)',
-        cursor: 'pointer',
-        transition: 'border-color 0.2s, background 0.2s',
-        textAlign: 'center',
-    },
-    disabled: { opacity: 0.5, cursor: 'not-allowed' },
-    uploadIcon: { fontSize: '2rem' },
-    dropText: { color: '#c7d2fe', fontWeight: '600', fontSize: '0.9rem' },
-    dropSub: { color: 'rgba(255,255,255,0.35)', fontSize: '0.78rem' },
-    previewWrapper: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.6rem',
-    },
-    previewImg: {
-        width: '100%',
-        maxHeight: '220px',
-        objectFit: 'cover',
-        borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.1)',
-    },
-    previewMeta: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: '0.5rem',
-    },
-    fileName: {
-        color: 'rgba(255,255,255,0.55)',
-        fontSize: '0.78rem',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        flex: 1,
-    },
-    clearBtn: {
-        padding: '0.3rem 0.75rem',
-        background: 'rgba(239,68,68,0.15)',
-        border: '1px solid rgba(239,68,68,0.3)',
-        borderRadius: '8px',
-        color: '#fca5a5',
-        cursor: 'pointer',
-        fontSize: '0.78rem',
-        fontWeight: '600',
-        flexShrink: 0,
-    },
-    error: {
-        color: '#fca5a5',
-        fontSize: '0.82rem',
-        margin: 0,
-        padding: '0.5rem 0.75rem',
-        background: 'rgba(239,68,68,0.1)',
-        borderRadius: '8px',
-        border: '1px solid rgba(239,68,68,0.2)',
-    },
+      )}
+      <button
+        type="submit"
+        disabled={!selectedFile || !!error}
+      >
+        Upload Image
+      </button>
+    </form>
+  );
 };
 
 export default ImageUpload;
