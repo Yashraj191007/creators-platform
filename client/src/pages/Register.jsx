@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 
 const Register = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -48,26 +49,19 @@ const Register = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name.trim(),
-                    email: formData.email.trim().toLowerCase(),
-                    password: formData.password,
-                }),
+            const response = await api.post('/api/auth/register', {
+                name: formData.name.trim(),
+                email: formData.email.trim().toLowerCase(),
+                password: formData.password,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                login(data.user, data.token);
-                navigate('/dashboard');
-            } else {
-                setApiError(data.message || 'Registration failed. Please try again.');
-            }
-        } catch {
-            setApiError('Unable to connect to server. Please check your connection.');
+            const { user, token } = response.data;
+            login(user, token);
+            navigate('/dashboard');
+        } catch (err) {
+            setApiError(
+                err.response?.data?.message || 'Unable to connect to server. Please check your connection.'
+            );
         } finally {
             setIsLoading(false);
         }
