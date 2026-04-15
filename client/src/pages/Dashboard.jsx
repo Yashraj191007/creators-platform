@@ -57,6 +57,20 @@ const Dashboard = () => {
         fetchPosts();
     }, []);
 
+    // Delete a post
+    const [deletingId, setDeletingId] = useState(null);
+    const handleDeletePost = async (postId) => {
+        setDeletingId(postId);
+        try {
+            await api.delete(`/api/posts/${postId}`);
+            setPosts((prev) => prev.filter((p) => p._id !== postId));
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to delete post.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
 
     if (!user) return null;
 
@@ -153,6 +167,24 @@ const Dashboard = () => {
                                                     year: 'numeric', month: 'short', day: 'numeric',
                                                 })}
                                             </p>
+                                            <button
+                                                onClick={() => handleDeletePost(post._id)}
+                                                disabled={deletingId === post._id}
+                                                style={{
+                                                    marginTop: '0.5rem',
+                                                    alignSelf: 'flex-end',
+                                                    padding: '0.3rem 0.7rem',
+                                                    background: 'rgba(239,68,68,0.15)',
+                                                    border: '1px solid rgba(239,68,68,0.4)',
+                                                    borderRadius: '6px',
+                                                    color: '#fca5a5',
+                                                    fontSize: '0.75rem',
+                                                    cursor: deletingId === post._id ? 'not-allowed' : 'pointer',
+                                                    fontWeight: '600',
+                                                }}
+                                            >
+                                                {deletingId === post._id ? 'Deleting…' : '🗑 Delete'}
+                                            </button>
                                         </div>
                                     </div>
                                 ))}

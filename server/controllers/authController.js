@@ -2,6 +2,60 @@ import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// @desc    Register a new user and return JWT
+// @route   POST /api/auth/register
+// @access  Public
+export const registerUser = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Please provide name, email, and password' });
+        }
+
+        const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+        if (existingUser) {
+            return res.status(400).json({ success: false, message: 'A user with this email already exists' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = await User.create({
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            password: hashedPassword,
+        });
+
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRE || '7d' }
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Registration successful',
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                createdAt: user.createdAt,
+            },
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ success: false, message: 'A user with this email already exists' });
+        }
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map((e) => e.message);
+            return res.status(400).json({ success: false, message: messages.join(', ') });
+        }
+        res.status(500).json({ success: false, message: 'Server error during registration', error: error.message });
+    }
+};
+
 // @desc    Login user and return JWT
 // @route   POST /api/auth/login
 // @access  Public

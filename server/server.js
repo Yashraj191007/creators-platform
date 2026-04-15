@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import app from './app.js';
 import connectDB from './config/db.js';
 import postRoutes from './routes/postRoutes.js';
+import errorHandler from './middleware/errorMiddleware.js';
 
 // Connect to MongoDB
 connectDB();
@@ -42,6 +43,14 @@ io.on('connection', (socket) => {
 
 // Post routes need the Socket.io instance for real-time events
 app.use('/api/posts', postRoutes(io));
+
+// 404 handler — must come AFTER all routes
+app.use((req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+// Global error handler — must be defined LAST
+app.use(errorHandler);
 
 // Start server
 httpServer.listen(PORT, () => {

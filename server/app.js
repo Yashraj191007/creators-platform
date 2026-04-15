@@ -28,12 +28,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-});
-
-// Global Error Handler MUST be defined LAST
-app.use(errorHandler);
+// NOTE: The /api/posts routes, 404 handler, and global error handler
+// are registered in server.js AFTER the Socket.io `io` instance is created,
+// because post routes need `io` for real-time events.
 
 export default app;

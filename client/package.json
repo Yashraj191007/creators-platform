@@ -2,6 +2,7 @@
   "name": "client",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -17,7 +18,7 @@
       "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/styleMock.js"
     },
     "transform": {
-      "^.+\\.[jt]sx?$": "babel-jest"
+      "^.+\\.[jt]sx?$": ["babel-jest", {"configFile": "./babel.config.cjs"}]
     }
   },
   "dependencies": {
