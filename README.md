@@ -40,6 +40,20 @@ npm install
 npm run dev
 ```
 
+## Running Tests Locally
+
+### Server tests
+```bash
+cd server
+npm test
+```
+
+### Client tests
+```bash
+cd client
+npm test
+```
+
 ## Environment Variables
 
 See `.env.example` in the root and `server/.env.example` for required variables.
