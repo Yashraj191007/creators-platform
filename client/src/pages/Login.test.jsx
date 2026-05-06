@@ -77,7 +77,7 @@ describe('Login Component', () => {
 
     // getByLabelText finds inputs by their associated <label> — #2 priority
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i, { selector: 'input' })).toBeInTheDocument();
 
     // getByRole for the submit button
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
@@ -116,6 +116,7 @@ describe('Login Component', () => {
     expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
   });
 
+
   // ── 6. No API call when validation fails ──────────────────────────────────
   it('does NOT call the API when the form is submitted with invalid data', () => {
     renderLogin();
@@ -138,7 +139,7 @@ describe('Login Component', () => {
     renderLogin();
 
     await user.type(screen.getByLabelText(/email address/i), 'user@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'secret123');
+    await user.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'secret123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
@@ -161,7 +162,7 @@ describe('Login Component', () => {
     renderLogin();
 
     await user.type(screen.getByLabelText(/email address/i), 'user@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'wrongpassword');
+    await user.type(screen.getByLabelText(/password/i, { selector: 'input' }), 'wrongpassword');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText(/invalid credentials/i)).toBeInTheDocument();
@@ -172,7 +173,7 @@ describe('Login Component', () => {
     const user = userEvent.setup();
     renderLogin();
 
-    const passwordInput = screen.getByLabelText(/password/i);
+    const passwordInput = screen.getByLabelText(/password/i, { selector: 'input' });
     const toggleBtn     = screen.getByRole('button', { name: /toggle password visibility/i });
 
     // Initially hidden
