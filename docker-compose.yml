@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # ─────────────────────────────────────────────
+  # MongoDB — database layer
+  # ─────────────────────────────────────────────
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # Named volume keeps data alive across docker-compose down / up
+      - mongo-data:/data/db
+    environment:
+      # Non-sensitive config: MongoDB root credentials for the container.
+      # These are only used to initialise the local Docker MongoDB instance.
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
+  # ─────────────────────────────────────────────
+  # Server — Express / Node.js API
+  # ─────────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: creator-platform-server
+    ports:
+      - "5000:5000"
+    # Secrets management: load variables from .env files instead of hardcoding them.
+    # .env       — developer's local secrets (JWT, Cloudinary, etc.) — never committed
+    # .env.docker — Docker-specific overrides, e.g. MONGODB_URI uses service name "mongo"
+    # Values in .env.docker override values in .env (files listed later take priority).
+    env_file:
+      - ./server/.env
+      - ./server/.env.docker
+    depends_on:
+      - mongo   # Ensures mongo container starts first (not MongoDB-ready, just started)
+
+  # ─────────────────────────────────────────────
+  # Client — React + Nginx (multi-stage build)
+  # ─────────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: creator-platform-client
+    ports:
+      # Host 3000 → Nginx port 80 inside the container
+      - "3000:80"
+    depends_on:
+      - server  # Ensures server starts before the client
+
+# ─────────────────────────────────────────────
+# Named volumes — persist data outside containers
+# ─────────────────────────────────────────────
+volumes:
+  mongo-data:

@@ -9,6 +9,7 @@ const LIMIT = 6;
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
     // Posts state
@@ -25,6 +26,7 @@ const Dashboard = () => {
     try {
         jwtPayload = token ? JSON.parse(atob(token.split('.')[1])) : null;
     } catch { jwtPayload = null; }
+
 
     const memberSince = user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -349,6 +351,48 @@ const styles = {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '1.25rem',
         marginBottom: '2rem',
+    },
+    createPostBtn: {
+        marginLeft: 'auto',
+        padding: '0.35rem 0.9rem',
+        background: 'linear-gradient(135deg, #6366f1, #ec4899)',
+        border: 'none', borderRadius: '8px',
+        color: '#fff', fontWeight: '700', fontSize: '0.8rem',
+        cursor: 'pointer',
+    },
+    emptyPosts: {
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+        padding: '1.5rem 0',
+    },
+    emptyPostsLink: {
+        color: '#a5b4fc', fontSize: '0.875rem', fontWeight: '600', textDecoration: 'none',
+    },
+    postsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+        gap: '1rem',
+    },
+    postCard: {
+        background: 'rgba(0,0,0,0.2)',
+        borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+    },
+    postCoverImage: {
+        width: '100%', height: '150px', objectFit: 'cover',
+        display: 'block',
+    },
+    postBody: { padding: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1 },
+    postTitle: {
+        color: '#fff', fontWeight: '700', fontSize: '0.9rem',
+        margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+    },
+    postContent: {
+        color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem', margin: 0, lineHeight: 1.5,
+        flex: 1,
+    },
+    postDate: {
+        color: 'rgba(255,255,255,0.25)', fontSize: '0.72rem', margin: 0, marginTop: '0.4rem',
     },
     card: {
         background: 'rgba(255,255,255,0.06)',

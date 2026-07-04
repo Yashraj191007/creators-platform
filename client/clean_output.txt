@@ -1,0 +1,174 @@
+Login Component
+    × displays the page heading, both input fields and the submit button (144 ms)
+    ○ skipped renders without crashing
+    ○ skipped shows an email validation error when the form is submitted with no email
+    ○ skipped shows a format error when an invalid email is entered
+    ○ skipped shows a password validation error when only the email is filled
+    ○ skipped does NOT call the API when the form is submitted with invalid data
+    ○ skipped calls the auth login function and navigates to dashboard on success
+    ○ skipped displays an API error banner when the server returns an error
+    ○ skipped toggles the password input type when the visibility button is clicked
+    ○ skipped renders a link to the registration page
+
+  ● Login Component › displays the page heading, both input fields and the submit button
+
+    TestingLibraryElementError: Found multiple elements with the text of: /password/i
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    <input
+      autocomplete="current-password"
+      id="password"
+      name="password"
+      placeholder="Enter your password"
+      style="padding: 0.75rem 3rem 0.75rem 1rem; font-size: 0.95rem; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: rgb(255, 255, 255); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;"
+      type="password"
+      value=""
+    />
+
+    Ignored nodes: comments, script, style
+    <button
+      aria-label="Toggle password visibility"
+      style="position: absolute; right: 0.75rem; background: none; cursor: pointer; font-size: 1rem; color: rgba(255, 255, 255, 0.5); padding: 0.25rem; line-height: 1;"
+      tabindex="-1"
+      type="button"
+    >
+      👁️
+    </button>
+
+    (If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <div
+          style="min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem 1rem; background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); position: relative; overflow: hidden;"
+        >
+          <div
+            style="position: absolute; top: -10rem; right: -10rem; width: 35rem; height: 35rem; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%); pointer-events: none;"
+          />
+          <div
+            style="position: absolute; bottom: -8rem; left: -8rem; width: 30rem; height: 30rem; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%); pointer-events: none;"
+          />
+          <div
+            style="position: relative; z-index: 1; width: 100%; max-width: 420px; padding: 2.5rem; background: rgba(255, 255, 255, 0.06); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 25px 60px rgba(0,0,0,0.5);"
+          >
+            <div
+              style="text-align: center; margin-bottom: 2rem;"
+            >
+              <div
+                style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #ec4899); font-size: 1.4rem; color: rgb(255, 255, 255); margin-bottom: 1rem; box-shadow: 0 0 20px rgba(99,102,241,0.5);"
+              >
+                ✦
+              </div>
+              <h1
+                style="font-size: 1.75rem; font-weight: 700; color: rgb(255, 255, 255); margin: 0px 0px 0.4rem; letter-spacing: -0.02em;"
+              >
+                Welcome Back
+              </h1>
+              <p
+                style="font-size: 0.875rem; color: rgba(255, 255, 255, 0.55); margin: 0px;"
+              >
+                Sign in to your Creators Platform account
+              </p>
+            </div>
+            <form
+              novalidate=""
+              style="display: flex; flex-direction: column; gap: 1.25rem;"
+            >
+              <div
+                style="display: flex; flex-direction: column; gap: 0.4rem;"
+              >
+                <label
+                  for="email"
+                  style="font-size: 0.82rem; font-weight: 600; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.03em; text-transform: uppercase;"
+                >
+                  Email Address
+                </label>
+                <input
+                  autocomplete="email"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  style="padding: 0.75rem 1rem; font-size: 0.95rem; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: rgb(255, 255, 255); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;"
+                  type="email"
+                  value=""
+                />
+              </div>
+              <div
+                style="display: flex; flex-direction: column; gap: 0.4rem;"
+              >
+                <label
+                  for="password"
+                  style="font-size: 0.82rem; font-weight: 600; color: rgba(255, 255, 255, 0.7); letter-spacing: 0.03em; text-transform: uppercase;"
+                >
+                  Password
+                </label>
+                <div
+                  style="position: relative; display: flex; align-items: center;"
+                >
+                  <input
+                    autocomplete="current-password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    style="padding: 0.75rem 3rem 0.75rem 1rem; font-size: 0.95rem; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: rgb(255, 255, 255); outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;"
+                    type="password"
+                    value=""
+                  />
+                  <button
+                    aria-label="Toggle password visibility"
+                    style="position: absolute; right: 0.75rem; background: none; cursor: pointer; font-size: 1rem; color: rgba(255, 255, 255, 0.5); padding: 0.25rem; line-height: 1;"
+                    tabindex="-1"
+                    type="button"
+                  >
+                    👁️
+                  </button>
+                </div>
+              </div>
+              <button
+                style="margin-top: 0.5rem; padding: 0.875rem; font-size: 1rem; font-weight: 700; color: rgb(255, 255, 255); background: linear-gradient(135deg, #6366f1, #ec4899); border-radius: 12px; cursor: pointer; letter-spacing: 0.02em; box-shadow: 0 4px 20px rgba(99,102,241,0.4); transition: opacity 0.2s, transform 0.15s;"
+                type="submit"
+              >
+                Sign In ✦
+              </button>
+            </form>
+            <p
+              style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: rgba(255, 255, 255, 0.45);"
+            >
+              Don't have an account?
+               
+              <a
+                href="/register"
+                style="color: rgb(129, 140, 248); font-weight: 600; text-decoration: none;"
+              >
+                Sign up here
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </body>
+
+      78 |     // getByLabelText finds inputs by their associated <label> — #2 priority
+      79 |     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+    > 80 |     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+         |                   ^
+      81 |
+      82 |     // getByRole for the submit button
+      83 |     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError (node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError (node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByLabelText (src/pages/Login.test.jsx:80:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 9 skipped, 10 total
+Snapshots:   0 total
+Time:        1.628 s
+Ran all test suites with tests matching "displays the page".
+Force exiting Jest: Hav

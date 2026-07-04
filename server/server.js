@@ -15,7 +15,6 @@ dotenv.config();
 // Connect to MongoDB
 connectDB();
 
-const app = express();
 const PORT = process.env.PORT || 5000;
 
 const httpServer = createServer(app);
@@ -41,9 +40,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Health check route
-app.get('/api/health', (req, res) => {
-    res.json({ message: 'Server is running!', timestamp: new Date() });
+    socket.on('disconnect', () => {
+        console.log(`User disconnected: ${socket.id}`);
+    });
 });
 
 // Routes
@@ -51,7 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 
-// 404 handler
+// 404 handler — must come AFTER all routes
 app.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
