@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 const ImageUpload = ({ onUpload }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const validateFile = (file) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -33,13 +32,9 @@ const ImageUpload = ({ onUpload }) => {
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
-      setSelectedFile(null);
       setPreviewUrl(null);
       return;
     }
-
-    // Set the file and generate a preview
-    setSelectedFile(file);
 
     // Revoke previous preview URL to prevent memory leaks
     if (previewUrl) {
@@ -48,34 +43,23 @@ const ImageUpload = ({ onUpload }) => {
 
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
+
+    // Auto-trigger upload
+    const formData = new FormData();
+    formData.append('image', file);
+
+    if (onUpload) {
+      onUpload(formData);
+    }
   };
 
   useEffect(() => {
-    // This runs when previewUrl changes or the component unmounts
     return () => {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
   }, [previewUrl]);
-
-  const handleUploadClick = (e) => {
-    e.preventDefault();
-
-    if (!selectedFile) {
-      setError('Please select an image first');
-      return;
-    }
-
-    // Create FormData and append the file
-    const formData = new FormData();
-    formData.append('image', selectedFile); // 'image' must match upload.single('image') on the backend
-
-    // Pass formData up to the parent component via the onUpload prop
-    if (onUpload) {
-      onUpload(formData);
-    }
-  };
 
   return (
     <div style={styles.container}>
@@ -92,7 +76,7 @@ const ImageUpload = ({ onUpload }) => {
       )}
       {previewUrl && (
         <div style={styles.previewContainer}>
-          <p style={styles.previewText}>Preview:</p>
+          <p style={styles.previewText}>Selected Image Preview:</p>
           <img
             src={previewUrl}
             alt="Selected file preview"
@@ -100,14 +84,6 @@ const ImageUpload = ({ onUpload }) => {
           />
         </div>
       )}
-      <button
-        type="button"
-        onClick={handleUploadClick}
-        disabled={!selectedFile || !!error}
-        style={styles.button}
-      >
-        Upload Image
-      </button>
     </div>
   );
 };
@@ -136,17 +112,6 @@ const styles = {
     objectFit: 'cover',
     borderRadius: '8px',
     border: '1px solid rgba(255,255,255,0.1)',
-  },
-  button: {
-    alignSelf: 'flex-start',
-    padding: '0.5rem 1rem',
-    background: 'rgba(255,255,255,0.08)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: '6px',
-    color: '#fff',
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    cursor: 'pointer',
   },
 };
 
