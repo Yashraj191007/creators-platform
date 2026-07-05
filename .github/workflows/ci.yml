@@ -65,15 +65,13 @@ jobs:
         run: |
           curl -X GET "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
-      # Vercel deploy temporarily disabled — needs new Vercel project
-      # linked to this repo (creators-platform). Re-enable once set up.
-      # - name: Install Vercel CLI
-      #   run: npm install -g vercel
-      #
-      # - name: Deploy to Vercel (Frontend)
-      #   run: |
-      #     cd client
-      #     vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-      #   env:
-      #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel (Frontend)
+        run: |
+          cd client
+          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
