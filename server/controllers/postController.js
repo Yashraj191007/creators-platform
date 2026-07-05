@@ -3,7 +3,7 @@ import Post from '../models/Post.js';
 // @desc    Create a new post
 // @route   POST /api/posts
 // @access  Protected
-export const createPost = async (req, res, next) => {
+export const createPost = async (req, res, next, io) => {
   try {
     const { title, content } = req.body;
 
@@ -19,6 +19,13 @@ export const createPost = async (req, res, next) => {
       content,
       author: req.user._id, // set by protect middleware
     });
+
+    if (io) {
+      io.emit('newPost', {
+        message: `New post created by ${req.user.name}!`,
+        post
+      });
+    }
 
     res.status(201).json({
       success: true,

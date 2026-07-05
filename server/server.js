@@ -8,6 +8,7 @@ import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import errorHandler from './middlewares/errorMiddleware.js';
+import jwt from 'jsonwebtoken';
 
 // Load environment variables
 dotenv.config();
@@ -26,8 +27,22 @@ const io = new Server(httpServer, {
     }
 });
 
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error('No token'));
+    }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        socket.data.user = decoded;
+        next();
+    } catch (error) {
+        next(new Error('Invalid token'));
+    }
+});
+
 io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.id}`);
+    console.log(`User connected: ${socket.id}, Email: ${socket.data.user?.email}`);
 
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
@@ -49,7 +64,7 @@ app.get('/api/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/posts', postRoutes);
+app.use('/api/posts', postRoutes(io));
 
 // 404 handler
 app.use((req, res) => {
