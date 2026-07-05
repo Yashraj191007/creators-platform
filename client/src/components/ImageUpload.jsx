@@ -59,7 +59,7 @@ const ImageUpload = ({ onUpload }) => {
     };
   }, [previewUrl]);
 
-  const handleSubmit = (e) => {
+  const handleUploadClick = (e) => {
     e.preventDefault();
 
     if (!selectedFile) {
@@ -72,42 +72,82 @@ const ImageUpload = ({ onUpload }) => {
     formData.append('image', selectedFile); // 'image' must match upload.single('image') on the backend
 
     // Pass formData up to the parent component via the onUpload prop
-    // The parent will handle the actual API call
     if (onUpload) {
       onUpload(formData);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div style={styles.container}>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         onChange={handleFileChange}
+        style={styles.fileInput}
       />
       {error && (
-        <p style={{ color: 'red' }}>
+        <p style={{ color: '#fca5a5', fontSize: '0.85rem', margin: '0.5rem 0' }}>
           {error}
         </p>
       )}
       {previewUrl && (
-        <div>
-          <p>Preview:</p>
+        <div style={styles.previewContainer}>
+          <p style={styles.previewText}>Preview:</p>
           <img
             src={previewUrl}
             alt="Selected file preview"
-            style={{ width: '200px', height: '200px', objectFit: 'cover' }}
+            style={styles.previewImage}
           />
         </div>
       )}
       <button
-        type="submit"
+        type="button"
+        onClick={handleUploadClick}
         disabled={!selectedFile || !!error}
+        style={styles.button}
       >
         Upload Image
       </button>
-    </form>
+    </div>
   );
+};
+
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem',
+  },
+  fileInput: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: '0.85rem',
+  },
+  previewContainer: {
+    marginTop: '0.5rem',
+  },
+  previewText: {
+    fontSize: '0.8rem',
+    color: 'rgba(255,255,255,0.4)',
+    margin: '0 0 0.5rem',
+  },
+  previewImage: {
+    width: '200px',
+    height: '150px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    border: '1px solid rgba(255,255,255,0.1)',
+  },
+  button: {
+    alignSelf: 'flex-start',
+    padding: '0.5rem 1rem',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
 };
 
 export default ImageUpload;
