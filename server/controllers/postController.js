@@ -1,4 +1,5 @@
 import Post from '../models/Post.js';
+import cloudinary from '../config/cloudinary.js';
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -132,8 +133,14 @@ export const deletePost = async (req, res) => {
             return res.status(403).json({ message: 'Not authorised to delete this post' });
         }
 
-        // TODO: Delete the coverImage from Cloudinary using coverImagePublicId
-        //       before removing the document to avoid orphaned uploads.
+        // Delete the coverImage from Cloudinary if it exists
+        if (post.coverImagePublicId) {
+            try {
+                await cloudinary.uploader.destroy(post.coverImagePublicId);
+            } catch (cloudinaryError) {
+                console.error('Failed to delete image from Cloudinary:', cloudinaryError);
+            }
+        }
 
         await post.deleteOne();
 
