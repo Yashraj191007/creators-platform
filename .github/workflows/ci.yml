@@ -70,7 +70,6 @@ jobs:
 
       - name: Deploy to Vercel (Frontend)
         run: |
-          cd client
           vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
